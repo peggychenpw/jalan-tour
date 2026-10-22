@@ -1,15 +1,37 @@
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-$(document).ready(function(){//使用JQ語法，JQ ready的function是必要的
-    $(function(){ $('#btn-discover').click(function(){ 
-        $('html,body').animate({scrollTop:$(".card").offset().top}, 500); 
-        });  
-    }); 
+function scrollTo(selector) {
+  document.querySelector(selector)?.scrollIntoView({
+    behavior: reducedMotion ? "auto" : "smooth",
+    block: "start"
+  });
+}
+
+document.querySelector("#btn-discover")?.addEventListener("click", (event) => {
+  event.preventDefault();
+  scrollTo(".card");
 });
 
+document.querySelector(".click-learn")?.addEventListener("click", (event) => {
+  event.preventDefault();
+  scrollTo(".scroll-learn");
+});
 
+const storyVideo = document.querySelector(".bg-video__content");
+const desktopMotion = window.matchMedia("(min-width: 601px) and (prefers-reduced-motion: no-preference)").matches;
 
-$(document).ready(function(){$(function(){$(".click-learn").click(function(){$("html,body").animate({scrollTop:$(".scroll-learn").offset().top},500)})})});
+if (storyVideo && desktopMotion && "IntersectionObserver" in window) {
+  const videoObserver = new IntersectionObserver((entries, observer) => {
+    if (!entries.some((entry) => entry.isIntersecting)) return;
 
+    storyVideo.querySelectorAll("source[data-src]").forEach((source) => {
+      source.src = source.dataset.src;
+      source.removeAttribute("data-src");
+    });
+    storyVideo.load();
+    storyVideo.play().catch(() => {});
+    observer.disconnect();
+  }, { rootMargin: "200px" });
 
-
-
+  videoObserver.observe(storyVideo);
+}
